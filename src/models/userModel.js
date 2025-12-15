@@ -30,11 +30,22 @@ const userSchema = mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "premium"],
+    enum: ["user", "premium", "admin"],
     default: "user",
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+  documents: [
+    {
+      name: String,
+      reference: String,
+    },
+  ],
+  last_connection: {
+    type: Date,
+    default: Date.now,
   },
 });
 
 const userModel = mongoose.model(userCollection, userSchema);
-
 export default userModel;

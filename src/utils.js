@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import passport from "passport";
+import crypto from "crypto";
 
 export const createHash = (password) => {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(10));
@@ -13,7 +13,7 @@ export const isValidPassword = (user, password) => {
 export const generateToken = (user) => {
   return jwt.sign(
     {
-      id: user._id,
+      id: user._id || user.id,
       email: user.email,
       role: user.role,
     },
@@ -30,36 +30,13 @@ export const verifyToken = (token) => {
   }
 };
 
-export const authMiddleware = (strategy) => {
-  return async (req, res, next) => {
-    passport.authenticate(strategy, { session: false }, (err, user, info) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({
-          status: "error",
-          message: info?.message || "Unauthorized",
-        });
-      }
-      req.user = user;
-      next();
-    })(req, res, next);
-  };
+export const generateResetToken = () => {
+  return crypto.randomBytes(32).toString("hex");
 };
 
-export const authorizationMiddleware = (roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        status: "error",
-        message: "Unauthorized",
-      });
-    }
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        status: "error",
-        message: "Forbidden: Insufficient permissions",
-      });
-    }
-    next();
-  };
+export const generateTicketCode = () => {
+  return `TICKET-${Date.now()}-${Math.random()
+    .toString(36)
+    .substr(2, 9)
+    .toUpperCase()}`;
 };
